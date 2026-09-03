@@ -55,11 +55,9 @@ src/
 
 ### Key design patterns
 
-- **Repository + Unit of Work** — `IUnitOfWork` exposes one repository per aggregate (`Courses`, `Students`, `Exams`) and a single `SaveChangesAsync`, so a single business operation commits atomically.
-- **Service layer** — controllers never talk to EF Core directly. All business rules (uniqueness checks, cross-entity validation, code normalization) live in `Application/Services`.
-- **`ServiceResult` / `ServiceResult<T>`** — services return a result object (`Succeeded`, `Error`, `ErrorType`) instead of throwing exceptions for expected outcomes like "not found" or "duplicate code". Controllers translate this into the right HTTP status via a shared `ApiControllerBase.FromResult(...)` helper. This keeps the Application layer completely unaware of HTTP.
-- **Exception translation at the boundary** — EF Core's `DbUpdateException` (e.g. a foreign key violation) is caught inside `Infrastructure` and re-thrown as `ForeignKeyConstraintException`, a type defined in `Application`. The Application layer never needs to reference `Microsoft.EntityFrameworkCore`.
-- **`IEntityTypeConfiguration<T>` per entity** instead of one large `OnModelCreating` method — each entity's SQL Server column mapping and constraints live in their own file under `Persistence/Configurations`.
+`IUnitOfWork` exposes one repository per aggregate (`Courses`, `Students`, `Exams`) and a single `SaveChangesAsync`, so a business operation commits atomically. Controllers never talk to EF Core directly — business rules (uniqueness checks, cross-entity validation, code normalization) live in `Application/Services`, which return a `ServiceResult` / `ServiceResult<T>` instead of throwing for expected outcomes like "not found" or "duplicate code"; `ApiControllerBase.FromResult(...)` turns that into the right HTTP status, so the Application layer stays unaware of HTTP.
+
+EF Core's `DbUpdateException` (e.g. a foreign key violation) is caught in `Infrastructure` and re-thrown as `ForeignKeyConstraintException`, a type owned by `Application`, so Application never needs to reference `Microsoft.EntityFrameworkCore`. Each entity's SQL Server mapping lives in its own `IEntityTypeConfiguration<T>` under `Persistence/Configurations` rather than one big `OnModelCreating`.
 
 ## Database Schema
 
@@ -82,10 +80,7 @@ The schema follows the original spec, with two deliberate deviations explained b
 | | `ExamDate` | `date` | |
 | | `Score` | `tinyint` | 0–9, enforced by a `CHECK` constraint |
 
-**Deviations from the original spec, and why:**
-
-1. **`nvarchar` instead of `varchar`** for all text columns. `varchar` cannot reliably store Azerbaijani-specific characters (ə, ş, ç, ğ, ö, ü, ı); `nvarchar` stores Unicode and avoids data corruption.
-2. **`Exams` has a surrogate `Id` primary key**, added on top of the spec. The original schema has no natural single-column key for an exam record; a surrogate key makes the entity addressable by a stable, immutable identifier (`GET/PUT/DELETE /api/exams/{id}`) instead of a 3-column composite key.
+Deviations from the original spec: text columns use `nvarchar` instead of `varchar`, since `varchar` can't reliably store Azerbaijani characters (ə, ş, ç, ğ, ö, ü, ı). `Exams` also gets a surrogate `Id` primary key — the spec has no natural single-column key for an exam, and a surrogate key lets `GET/PUT/DELETE /api/exams/{id}` address it directly instead of needing a 3-column composite key.
 
 Both foreign keys use `ON DELETE NO ACTION` (`DeleteBehavior.Restrict`): a course or student with existing exam records cannot be deleted until those exam records are removed first, preventing silent data loss.
 
@@ -123,8 +118,8 @@ dotnet user-secrets set "ConnectionStrings:DefaultConnection" \
 ### 3. Apply migrations
 
 ```bash
+cd ../..                                 # back to repo root
 dotnet tool install --global dotnet-ef   # once, if not already installed
-cd "StudentExamApp - BE"                 # repo root
 dotnet ef database update \
   --project src/StudentExam.Infrastructure \
   --startup-project src/StudentExam.Api
@@ -210,15 +205,6 @@ Response shape:
 - `404 Not Found` — referenced resource does not exist
 - `409 Conflict` — duplicate key on create, or delete blocked by a foreign key reference
 
-## Running SQL Server on Apple Silicon — troubleshooting notes
+## Running SQL Server on Apple Silicon
 
-Two issues were hit and resolved while setting this up on an M2 Mac; documenting them here in case they resurface:
-
-1. **Azure SQL Edge was considered and rejected.** It's the usual ARM-native suggestion, but Microsoft retired it on September 30, 2025 — using it would mean building on an unsupported product. The real `mcr.microsoft.com/mssql/server` image (run under emulation via `platform: linux/amd64`) is used instead.
-2. **"Invalid mapping of address ... reserved address space" crash loop.** This was caused by an outdated Docker Desktop version (4.14.1, from 2022) still using QEMU-only emulation. Updating Docker Desktop and enabling *"Use Rosetta for x86/amd64 emulation"* resolved it — SQL Server 2022 then starts and runs normally.
-
-## Possible next steps
-
-- Unit tests for the Application layer (services can be tested against mocked repository interfaces) and integration tests for the API
-- Authentication / authorization
-- Angular frontend consuming this API
+Azure SQL Edge is the usual ARM-native suggestion, but Microsoft retired it on September 30, 2025, so this uses the real `mcr.microsoft.com/mssql/server` image under emulation (`platform: linux/amd64`). On an outdated Docker Desktop this can crash-loop with `"Invalid mapping of address ... reserved address space"` — updating Docker Desktop and enabling "Use Rosetta for x86/amd64 emulation" fixes it.
