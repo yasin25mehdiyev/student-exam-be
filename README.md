@@ -204,7 +204,3 @@ Response shape:
 - `400 Bad Request` — validation failure (e.g. `Score` outside 0–9)
 - `404 Not Found` — referenced resource does not exist
 - `409 Conflict` — duplicate key on create, or delete blocked by a foreign key reference
-
-## Running SQL Server on Apple Silicon
-
-Azure SQL Edge is the usual ARM-native suggestion, but Microsoft retired it on September 30, 2025, so this uses the real `mcr.microsoft.com/mssql/server` image under emulation (`platform: linux/amd64`). On an outdated Docker Desktop this can crash-loop with `"Invalid mapping of address ... reserved address space"` — updating Docker Desktop and enabling "Use Rosetta for x86/amd64 emulation" fixes it.
