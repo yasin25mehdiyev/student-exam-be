@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="src/StudentExam.Domain/StudentExam.Domain.csproj" />
+  <Project Path="src/StudentExam.Application/StudentExam.Application.csproj" />
+  <Project Path="src/StudentExam.Infrastructure/StudentExam.Infrastructure.csproj" />
+  <Project Path="src/StudentExam.Api/StudentExam.Api.csproj" />
+</Solution>
