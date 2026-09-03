@@ -2,12 +2,15 @@
 bin/
 obj/
 *.user
-*.suo
 
-## Rider / VS
-.vs/
-.idea/
-*.DotSettings.user
-
-## Env
+## Environment secrets
 .env
+
+## OS / IDE
+.DS_Store
+.vs/
+.vscode/
+.idea/
+
+## Test output
+TestResults/
