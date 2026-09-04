@@ -28,9 +28,16 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Zip publish output
+        run: cd publish && zip -r ../publish.zip . && cd ..
+
+      # SCM Basic Auth (publish-profile/Kudu) is disabled by default on new App
+      # Service instances, so azure/webapps-deploy's publish-profile path always
+      # fails here. `az webapp deploy` uses the OIDC login above (ARM-based) instead.
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ./publish
+        run: |
+          az webapp deploy \
+            --resource-group student-exam-rg \
+            --name ${{ secrets.AZURE_WEBAPP_NAME }} \
+            --src-path publish.zip \
+            --type zip
