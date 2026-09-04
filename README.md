@@ -2,6 +2,12 @@
 
 A backend API for registering courses, students and their exam results at a school, built as a hands-on learning project to practice **.NET, Entity Framework Core, and Microsoft SQL Server** using **Clean Architecture**.
 
+## Live Demo
+
+**https://student-exam-api.azurewebsites.net/swagger**
+
+Hosted on Azure App Service (Free tier) with an Azure SQL Database (Free tier). The free plan sleeps after ~20 minutes of inactivity, so the first request after a while can take 10-30 seconds to wake up — subsequent ones are fast.
+
 ## Tech Stack
 
 | Concern | Choice |
@@ -9,7 +15,8 @@ A backend API for registering courses, students and their exam results at a scho
 | Language / Runtime | C# / .NET 10 |
 | Web framework | ASP.NET Core Web API (controller-based) |
 | ORM | Entity Framework Core 10 (Code-First, migrations) |
-| Database | Microsoft SQL Server 2022 (Docker container) |
+| Database | Microsoft SQL Server 2022 (Docker container locally, Azure SQL Database in production) |
+| Hosting | Azure App Service (Linux, Free tier) |
 | API documentation | Swagger / Swashbuckle |
 | Architecture | Clean Architecture (Domain / Application / Infrastructure / API) |
 
@@ -204,3 +211,7 @@ Response shape:
 - `400 Bad Request` — validation failure (e.g. `Score` outside 0–9)
 - `404 Not Found` — referenced resource does not exist
 - `409 Conflict` — duplicate key on create, or delete blocked by a foreign key reference
+
+## Deployment
+
+Every push to `main` runs [.github/workflows/azure-deploy.yml](.github/workflows/azure-deploy.yml), which builds the API and deploys it to Azure App Service. EF Core migrations are applied automatically on startup (see `Program.cs`), so there's no separate migration step in production.
