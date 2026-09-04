@@ -5,7 +5,7 @@ services:
     container_name: studentexam-sqlserver
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "${SA_PASSWORD}"
+      MSSQL_SA_PASSWORD: "${SA_PASSWORD:-DevPassword#2026}"
       MSSQL_PID: "Developer"
     ports:
       - "1433:1433"
