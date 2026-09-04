@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.EntityFrameworkCore;
 using StudentExam.Application;
 using StudentExam.Infrastructure;
@@ -5,11 +6,22 @@ using StudentExam.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.CustomOperationIds(apiDesc =>
+        (apiDesc.ActionDescriptor as ControllerActionDescriptor)?.MethodInfo.Name);
+});
+
+const string LocalDevCorsPolicy = "LocalDevCors";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(LocalDevCorsPolicy, policy =>
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -22,16 +34,11 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
-// Swagger is left on in every environment so the hosted demo stays browsable.
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// HTTPS enforcement is left to the host (Azure App Service "HTTPS Only" setting):
-// UseHttpsRedirection() here would loop behind App Service's Linux reverse proxy,
-// which doesn't set forwarded headers by default.
-
+app.UseCors(LocalDevCorsPolicy);
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
