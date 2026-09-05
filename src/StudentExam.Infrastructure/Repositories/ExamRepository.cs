@@ -93,4 +93,7 @@ public class ExamRepository : IExamRepository
     public void Update(Exam entity) => _context.Exams.Update(entity);
 
     public void Remove(Exam entity) => _context.Exams.Remove(entity);
+
+    public async Task<int> CountAsync(CancellationToken ct = default) =>
+        await _context.Exams.CountAsync(ct);
 }

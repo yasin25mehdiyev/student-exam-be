@@ -178,6 +178,7 @@ Open the printed HTTPS URL with `/swagger` appended (e.g. `https://localhost:727
 |---|---|---|
 | GET | `/api/reports/students/{number}` | All exam results for one student, plus their average score |
 | GET | `/api/reports/class-averages?courseCode=` | Average score grouped by class level, optionally filtered to one course |
+| GET | `/api/reports/summary` | Total counts of courses, students and exams across the system |
 
 ### Pagination, search and sort
 

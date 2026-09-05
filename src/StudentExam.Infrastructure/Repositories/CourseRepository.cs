@@ -58,4 +58,7 @@ public class CourseRepository : ICourseRepository
     public void Update(Course entity) => _context.Courses.Update(entity);
 
     public void Remove(Course entity) => _context.Courses.Remove(entity);
+
+    public async Task<int> CountAsync(CancellationToken ct = default) =>
+        await _context.Courses.CountAsync(ct);
 }
