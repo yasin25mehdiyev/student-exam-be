@@ -66,4 +66,16 @@ public class ReportService : IReportService
 
         return ServiceResult<List<ClassAverageDto>>.Success(averages);
     }
+
+    public async Task<ServiceResult<SystemSummaryDto>> GetSummaryAsync(CancellationToken ct = default)
+    {
+        var summary = new SystemSummaryDto
+        {
+            TotalCourses = await _unitOfWork.Courses.CountAsync(ct),
+            TotalStudents = await _unitOfWork.Students.CountAsync(ct),
+            TotalExams = await _unitOfWork.Exams.CountAsync(ct)
+        };
+
+        return ServiceResult<SystemSummaryDto>.Success(summary);
+    }
 }

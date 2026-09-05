@@ -52,4 +52,7 @@ public class StudentRepository : IStudentRepository
     public void Update(Student entity) => _context.Students.Update(entity);
 
     public void Remove(Student entity) => _context.Students.Remove(entity);
+
+    public async Task<int> CountAsync(CancellationToken ct = default) =>
+        await _context.Students.CountAsync(ct);
 }

@@ -16,3 +16,10 @@ public class ClassAverageDto
     public double AverageScore { get; set; }
     public int ExamCount { get; set; }
 }
+
+public class SystemSummaryDto
+{
+    public int TotalCourses { get; set; }
+    public int TotalStudents { get; set; }
+    public int TotalExams { get; set; }
+}

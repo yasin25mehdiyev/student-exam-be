@@ -27,4 +27,11 @@ public class ReportController : ApiControllerBase
         var result = await _reportService.GetClassAveragesAsync(courseCode, ct);
         return FromResult(result);
     }
+
+    [HttpGet("summary")]
+    public async Task<ActionResult<SystemSummaryDto>> GetSummary(CancellationToken ct)
+    {
+        var result = await _reportService.GetSummaryAsync(ct);
+        return FromResult(result);
+    }
 }
