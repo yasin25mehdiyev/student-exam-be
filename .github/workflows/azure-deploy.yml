@@ -34,10 +34,20 @@ jobs:
       # SCM Basic Auth (publish-profile/Kudu) is disabled by default on new App
       # Service instances, so azure/webapps-deploy's publish-profile path always
       # fails here. `az webapp deploy` uses the OIDC login above (ARM-based) instead.
+      #
+      # Retried because the Free (F1) tier occasionally SIGABRTs on cold start
+      # under its tight CPU/memory quota; Azure's own platform usually recovers
+      # a few seconds later, but `az webapp deploy`'s 10-minute wait sometimes
+      # gives up just before that happens.
       - name: Deploy to Azure Web App
-        run: |
-          az webapp deploy \
-            --resource-group student-exam-rg \
-            --name ${{ secrets.AZURE_WEBAPP_NAME }} \
-            --src-path publish.zip \
-            --type zip
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 3
+          timeout_minutes: 12
+          retry_wait_seconds: 30
+          command: |
+            az webapp deploy \
+              --resource-group student-exam-rg \
+              --name ${{ secrets.AZURE_WEBAPP_NAME }} \
+              --src-path publish.zip \
+              --type zip
