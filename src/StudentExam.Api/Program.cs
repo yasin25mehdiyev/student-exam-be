@@ -17,11 +17,11 @@ builder.Services.AddSwaggerGen(options =>
         (apiDesc.ActionDescriptor as ControllerActionDescriptor)?.MethodInfo.Name);
 });
 
-const string LocalDevCorsPolicy = "LocalDevCors";
+const string FrontendCorsPolicy = "FrontendCors";
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(LocalDevCorsPolicy, policy =>
-        policy.WithOrigins("http://localhost:4200")
+    options.AddPolicy(FrontendCorsPolicy, policy =>
+        policy.WithOrigins("http://localhost:4200", "https://student-exam-fe.onrender.com")
               .AllowAnyHeader()
               .AllowAnyMethod());
 });
@@ -40,7 +40,7 @@ using (var scope = app.Services.CreateScope())
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseCors(LocalDevCorsPolicy);
+app.UseCors(FrontendCorsPolicy);
 app.UseAuthorization();
 app.MapControllers();
 
